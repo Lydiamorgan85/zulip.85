@@ -1,243 +1,313 @@
-#lightbox_overlay {
-    background-color: hsl(227deg 40% 16%);
-    display: flex;
-    flex-direction: column;
-    height: 100dvh;
+@import url("flatpickr/dist/themes/dark.css");
 
-    .image-preview {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        width: 100%;
-        margin: 0;
-        overflow: hidden;
+%dark-theme {
+    color-scheme: dark;
 
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center center;
+    kbd {
+        text-shadow: none;
+    }
 
-        & img {
-            cursor: move;
-            max-height: 100%;
-            max-width: 100%;
-            object-fit: contain;
-        }
+    /************************* MODAL DARK THEME *******************/
 
-        .zoom-element {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+    #message-formatting,
+    #keyboard-shortcuts {
+        & kbd {
+            border: 1px solid var(--color-hotkey-hint);
+            border-radius: 3px;
+            color: var(--color-hotkey-hint);
+            opacity: 0.8;
         }
     }
 
-    .video-player {
-        flex: 1;
-        display: flex;
-        width: 100%;
-        align-items: center;
-        justify-content: center;
-        margin: 0;
-        overflow: hidden;
+    /* Use design tokens for enter-sends helper text to stay consistent with dark theme typography */
+    .enter_sends_choices {
+        color: var(--color-text-default);
 
-        & video {
-            max-width: 100%;
-            max-height: 100%;
+        .enter_sends_minor {
+            color: var(--color-text-subtle);
         }
     }
 
-    .exit {
-        flex-shrink: 0;
+    .dropdown-list-delete {
+        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
+        color: color-mix(
+            in oklch,
+            hsl(7deg 100% 74%) 70%,
+            transparent
+        ) !important;
 
-        color: hsl(0deg 0% 100% / 80%);
-        font-size: 14px;
-        line-height: 31px;
-
-        opacity: 0;
-        pointer-events: none;
-        cursor: pointer;
-        transition: opacity 0.2s ease;
-    }
-
-    &.show .exit {
-        pointer-events: auto;
-        opacity: 1;
-    }
-
-    .media-info-wrapper {
-        display: flex;
-        justify-content: end;
-        align-items: start;
-        gap: 20px;
-        padding: 20px;
-
-        background-color: transparent;
-    }
-
-    .media-actions {
-        display: flex;
-        flex-shrink: 0;
-        gap: 10px;
-
-        .lightbox-media-action {
-            font-size: 0.9rem;
-            min-width: inherit;
-            padding: 4px 10px;
-            border: 1px solid hsl(0deg 0% 100% / 60%);
-            background-color: transparent;
-            color: hsl(0deg 0% 100%);
-            border-radius: 4px;
-            text-decoration: none;
-            display: inline-block;
-
-            &:hover {
-                background-color: hsl(0deg 0% 100%);
-                border-color: hsl(0deg 0% 100%);
-                color: hsl(227deg 40% 16%);
-            }
+        &:hover {
+            color: hsl(7deg 100% 74%) !important;
         }
+    }
 
-        .disabled {
+    /* this one is because in the app we have blue and in dark-theme it should be white. */
+    .popover a {
+        color: inherit;
+    }
+
+    /* these are converting grey things to "new grey".
+       :disabled rules are exploded for CSS selector performance reasons. */
+    button:disabled:not(.action-button, .icon-button, .info-density-button),
+    option:disabled,
+    select:disabled,
+    input:disabled:not(.modal_text_input),
+    input:not([type="radio"], .modal_text_input):read-only,
+    #organization-permissions .dropdown-widget-button:disabled,
+    #organization-settings .dropdown-widget-button:disabled {
+        color: inherit;
+        opacity: 0.5;
+    }
+
+    button.info-density-button:disabled {
+        color: inherit;
+        opacity: 0.4;
+    }
+
+    .popover-filter-input-wrapper .popover-filter-input:focus {
+        background-color: hsl(225deg 6% 7%);
+        border: 1px solid hsl(0deg 0% 100% / 50%);
+        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
+    }
+
+    /* Standardize dropdown option typography to match theme variables */
+    & select option {
+        background-color: var(--color-background);
+        color: var(--color-text-default);
+    }
+
+    .pill-container.not-editable-by-user,
+    .group_setting_disabled .pill-container {
+        opacity: 0.5;
+    }
+
+    #searchbox {
+        /* Light theme shows hover mostly through box-shadow,
+          and dark theme shows it mostly through changing color
+          of the search button. */
+        .navbar-search:not(.expanded)
+            #searchbox-input-container:hover
+            .search_icon {
+            opacity: 0.75;
+        }
+    }
+
+    textarea.schedule-reminder-note:focus {
+        border-color: hsl(0deg 0% 0% / 90%);
+    }
+
+    .popover hr,
+    hr {
+        opacity: 0.2;
+    }
+
+    #recent_view_table {
+        .zulip-icon-user {
             opacity: 0.7;
-            cursor: default;
+        }
+    }
 
-            &:hover {
-                background-color: transparent;
-                color: hsl(0deg 0% 100%);
-                border: 1px solid hsl(0deg 0% 100% / 60%);
+    #recent-view-content-table {
+        border-bottom-width: 1px;
+    }
+
+    .drafts-container .header-body .delete-drafts-group > *:focus {
+        background-color: hsl(228deg 11% 17%);
+    }
+
+    .table-striped tbody tr:nth-child(even) td {
+        border-color: hsl(0deg 0% 0% / 20%);
+        background-color: color-mix(
+            in srgb,
+            hsl(0deg 0% 0%) 20%,
+            var(--color-background-modal)
+        );
+    }
+
+    .overlay-message-row
+        .message_header_private_message
+        .message_label_clickable {
+        padding: 4px 6px 3px;
+        color: inherit;
+    }
+
+    & time {
+        background: hsl(0deg 0% 0% / 20%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
+    }
+
+    .tip,
+    .invite-stream-notice {
+        color: inherit;
+    }
+
+    /* System alert banner typography using default dark text token */
+    .alert.home-error-bar {
+        color: var(--color-text-default);
+        background-color: hsl(35deg 84% 62% / 25%);
+        border: 1px solid hsl(11deg 46% 54%);
+    }
+
+    .alert.alert-success {
+        color: inherit;
+        background-color: hsl(161deg 60% 46% / 20%);
+        border-color: hsl(165deg 68% 37%);
+    }
+
+    .alert.alert-info {
+        color: hsl(205deg 58% 80%);
+        background-color: hsl(204deg 100% 12%);
+        border-color: hsl(205deg 58% 69% / 40%);
+    }
+
+    .alert.alert-error,
+    .alert.alert-danger {
+        background-color: hsl(318deg 12% 21%);
+        color: inherit;
+        border: 1px solid hsl(0deg 75% 65%);
+    }
+
+    .alert-box .alert,
+    .alert-box .stacktrace,
+    .alert.alert-error {
+        background-color: hsl(318deg 12% 21%);
+        color: inherit;
+        border: 1px solid hsl(0deg 75% 65%);
+    }
+
+    .alert-box {
+        .alert.alert-error::before {
+            color: hsl(0deg 75% 65%);
+        }
+    }
+
+    .stacktrace {
+        color: hsl(314deg 22% 85%);
+        background-color: hsl(318deg 12% 21%);
+        border: 1px solid hsl(0deg 75% 65%);
+
+        .expand {
+            color: hsl(318deg 14% 36%);
+        }
+
+        .subtle {
+            color: hsl(314deg 19% 63%);
+        }
+
+        .stacktrace-more-info {
+            background-color: hsl(312deg 7% 14%);
+        }
+
+        .code-context {
+            color: hsl(314deg 27% 82%);
+            background-color: hsl(312deg 7% 14%);
+            box-shadow:
+                inset 0 11px 10px -10px hsl(0deg 0% 6%),
+                inset 0 -11px 10px -10px hsl(0deg 0% 6%);
+
+            .line-number {
+                color: hsl(318deg 14% 44%);
+            }
+
+            .focus-line {
+                background-color: hsl(307deg 9% 19%);
             }
         }
     }
 
-    .media-description {
-        container: media-description / inline-size;
+    .top-messages-logo {
+        opacity: 0.7;
+    }
 
-        flex: 1;
-        /* setting min-width to an absolute value will make
-           sure the text gets truncated in case of overflow */
-        min-width: 0;
+    .history-limited-box {
+        background-color: hsl(0deg 0% 0% / 20%);
+    }
 
-        font-size: 1.1rem;
-        color: hsl(0deg 0% 100%);
+    .searching-for-more-topics img {
+        filter: invert(100%);
+    }
 
-        .title {
-            vertical-align: top;
-            font-weight: 400;
-            line-height: normal;
+    .simplebar-track .simplebar-scrollbar::before {
+        background-color: hsl(0deg 0% 100%);
+        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 33%);
+    }
 
-            /* Required for text-overflow */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .collapse-settings-button:hover {
+        color: hsl(200deg 79% 66%);
+    }
 
-        .user {
-            font-weight: 300;
-            line-height: normal;
-            text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: pre;
-
-            &::before {
-                margin-right: 5px;
-                content: "\2014";
-            }
+    #loading_older_messages_indicator,
+    #recent_view_loading_messages_indicator {
+        & path {
+            fill: hsl(0deg 0% 100%);
         }
     }
 
-    .player-container {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        & iframe {
-            aspect-ratio: 16/9;
-            /* for screen_width<=lg_min aspect-ratio will be
-               maintained given portrait mode is used */
-            /* in landscape max-height will prevent overflow,
-               however user will benefit more from using
-               youtube fullscreen at that point */
-            width: 100%;
-            /* maintains the aspect ratio for screen_width>=lg_min. */
-            max-width: $lg_min;
-            /* height(media_info_container) + height(center) < 200px */
-            max-height: calc(100dvh - 200px);
-        }
+    & a:not(:active):focus,
+    button:not(.action-button, .icon-button):focus-visible,
+    i.fa:focus,
+    i.zulip-icon:focus,
+    [role="button"]:focus {
+        outline-color: hsl(0deg 0% 67%);
     }
 
-    .center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2px;
-        padding: 12px 20px;
-
-        .arrow {
+    .color_animated_button {
+        .zulip-icon {
             color: hsl(0deg 0% 100%);
-            /* The thumbnails do not scale, so we express these
-               dimensions as pixels, too. */
-            font-size: 35px;
-            line-height: 25.6px;
+        }
+    }
 
-            cursor: pointer;
-
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-
-            &:hover {
-                opacity: 1;
-            }
+    .panel_user_list > .pill-container,
+    .creator_details > .display_only_pill {
+        &:hover {
+            color: inherit;
         }
 
-        .image-list {
-            position: relative;
-            display: inline-block;
-            font-size: 0;
-
-            max-width: 40vw;
-            overflow: hidden;
-            white-space: nowrap;
-
-            .image {
-                display: inline-block;
-                vertical-align: top;
-                width: 50px;
-                height: 50px;
-                margin: 0 2px;
-
-                background-color: hsl(0deg 0% 94% / 20%);
-                opacity: 0.5;
-
-                background-size: cover;
-                background-position: center;
-                cursor: pointer;
-
-                &.selected {
-                    opacity: 1;
-                }
+        > .pill {
+            &:focus,
+            &:hover {
+                color: inherit;
             }
+        }
+    }
 
-            .lightbox_video video {
-                width: 50px;
-                height: 50px;
-            }
+    .help_link_widget:hover {
+        color: inherit;
+    }
+
+    #uppy-editor .uppy-ImageCropper {
+        /* Uppy cropper canvas has some CSS properties set for the background that
+        do not look good for dark theme. When using Uppy Dashboard, this can be
+        solved by passing `theme` field with value as true in config options.
+        However we are not using that plugin so we need to provide our own dark
+        theme CSS for this detail.
+
+        Link for source from where the CSS properties are taken -
+        https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L123
+        and https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L133 */
+        .cropper-modal {
+            opacity: 0.7;
+            background-color: hsl(0deg 0% 0%);
+        }
+
+        .cropper-view-box {
+            background: repeating-conic-gradient(
+                    hsl(0deg 1.18% 16.67%) 0% 25%,
+                    hsl(0deg 0% 0%) 0% 50%
+                )
+                50%/16px 16px;
         }
     }
 }
 
-/* hide media-description if it has width less than 100px  */
-@container media-description (max-width: 100px) {
-    .media-description {
-        .title {
-            display: none;
-        }
+@media screen {
+    :root.dark-theme {
+        @extend %dark-theme;
+    }
+}
 
-        .user {
-            display: none;
-        }
+@media screen and (prefers-color-scheme: dark) {
+    :root.color-scheme-automatic {
+        @extend %dark-theme;
     }
 }
