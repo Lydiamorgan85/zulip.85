@@ -1012,6 +1012,87 @@ class StripeTest(StripeTestCase):
             # No additional ledger entries are created.
             self.assertEqual(before_ledger_count, after_ledger_count)
 
+    @mock_stripe()
+    def test_free_trial_upgrade_by_invoice_voided(self, *mocks: Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60), time_machine.travel(self.now, tick=False):
+            self.upgrade(invoice=True)
+
+        customer = Customer.objects.get(realm=user.realm)
+        stripe_customer_id = assert_is_not_none(customer.stripe_customer_id)
+        [stripe_invoice] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        assert stripe_invoice.id is not None
+        self.assertEqual(stripe_invoice.status, "open")
+
+        invoice = Invoice.objects.get(customer=customer, stripe_invoice_id=stripe_invoice.id)
+        self.assertEqual(invoice.status, Invoice.SENT)
+        self.assertIsNone(invoice.get_last_associated_event())
+
+        # Support voids the unpaid invoice in Stripe, delivering an invoice.voided webhook.
+        cursor = self.pin_event_cursor()
+        stripe.Invoice.void_invoice(stripe_invoice.id)
+        self.send_stripe_webhook_events(cursor, "invoice.voided")
+
+        invoice.refresh_from_db()
+        self.assertEqual(invoice.status, Invoice.VOID)
+        event = invoice.get_last_associated_event()
+        assert event is not None
+        self.assertEqual(event.type, "invoice.voided")
+        self.assertEqual(event.status, Event.EVENT_HANDLER_SUCCEEDED)
+
+    def test_free_trial_billing_page_after_invoice_voided(self) -> None:
+        # An invoice-billed free trial whose invoice is later voided should
+        # show the pending downgrade instead of a stale prompt to pay it.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        with self.settings(CLOUD_FREE_TRIAL_DAYS=60), time_machine.travel(self.now, tick=False):
+            self.local_upgrade(
+                self.seat_count,
+                False,
+                CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+                False,
+                True,
+            )
+
+        customer = get_customer_by_realm(user.realm)
+        assert customer is not None
+        plan = get_current_plan_by_customer(customer)
+        assert plan is not None
+        self.assertEqual(plan.status, CustomerPlan.FREE_TRIAL)
+        invoice = Invoice.objects.get(plan=plan)
+        self.assertTrue(invoice.is_created_for_free_trial_upgrade)
+        self.assertEqual(invoice.status, Invoice.SENT)
+
+        mock_customer = Mock(email=user.delivery_email)
+        with (
+            time_machine.travel(self.now, tick=False),
+            patch("corporate.lib.stripe.stripe_get_customer", return_value=mock_customer),
+        ):
+            response = self.client_get("/billing/")
+            self.assert_in_success_response(["To ensure continuous access", "please pay"], response)
+
+            # Mark the invoice void, as the invoice.voided webhook does; see
+            # test_free_trial_upgrade_by_invoice_voided for that half of the flow.
+            invoice.status = Invoice.VOID
+            invoice.save(update_fields=["status"])
+
+            response = self.client_get("/billing/")
+            self.assert_in_success_response(
+                [
+                    (
+                        "will be downgraded to <strong>Zulip Cloud Free</strong> "
+                        "at the end of the free trial"
+                    )
+                ],
+                response,
+            )
+            self.assert_not_in_success_response(
+                ["To ensure continuous access", "please pay"], response
+            )
+
     def test_make_end_of_cycle_updates_errors_without_free_trial_invoice(self) -> None:
         realm = get_realm("zulip")
         customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_123")
